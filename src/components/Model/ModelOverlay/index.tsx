@@ -1,52 +1,51 @@
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import React, { useCallback, useLayoutEffect, useState } from 'react';
+import {useTransform} from 'framer-motion';
 
-import useWrapperScroll from "../useWrapperScroll";
-import {Car} from '../ModelsContext';
+import useWrapperScroll from '../useWrapperScroll';
+import { ModelOverlayDiv } from './styles';
 
-import { Container }  from "./styles";
-import { useTransform } from "framer-motion";
+import {Car} from '../ModelsContext'
 
 interface Props{
-    model:Car;
+    model:Car
 }
 
-type SectionDimensions = Pick<HTMLDivElement, 'offsetTop' | 'offsetHeight'>
+type SectionDimension = Pick<HTMLDivElement,'offsetTop' | 'offsetHeight'>
 
-const ModelOverlay : React.FC<Props> = ({model, children })=>{
+const ModelOverlay:React.FC<Props> = ({children,model})=>{
+    const getSectionDimension = useCallback(()=>{
+        return{
+            offsetTop: model.blockRef.current?.offsetTop,
+            offsetHeight: model.blockRef.current?.offsetHeight
+        } as SectionDimension
+    },[model.blockRef]);
 
-    const getSectionDimensions = useCallback(()=>{
-        return {
-            offsetTop : model.sectionRef.current?.offsetTop,
-            offsetHeight: model.sectionRef.current?.offsetHeight
-        } as SectionDimensions
-    },[model.sectionRef]);
-
-    const [dimension,setDimension ] = useState<SectionDimensions>(
-       getSectionDimensions()
-    );
+    const[dimension,setDimension] = useState<SectionDimension>(
+        getSectionDimension()
+    )
 
     useLayoutEffect(()=>{
         function onResize(){
-            window.requestAnimationFrame(()=> setDimension(getSectionDimensions()));
+            window.requestAnimationFrame(()=>setDimension(getSectionDimension()));
         }
 
         window.addEventListener('resize',onResize);
 
-        return () => window.removeEventListener('resize',onResize);
-    },[getSectionDimensions]);
+        return()=>window.removeEventListener('resize',onResize);
+    },[getSectionDimension]);
 
-    const{ scrollY } = useWrapperScroll();
+    const {scrollY} = useWrapperScroll();
 
-    const sectionScrollProgress = useTransform(scrollY,y => (y - dimension.offsetTop)/dimension.offsetHeight);
+    const scrollProgress = useTransform(scrollY,y=>(y-dimension.offsetTop)/dimension.offsetHeight);
 
-    const opacity = useTransform(sectionScrollProgress,[-0.42,-0.05,0.05,0.42],[0,1,1,0])
+    const opacity = useTransform(scrollProgress,[-0.5,-0.1,0.1,0.5],[0,1,1,0]);
 
-    const pointerEvents = useTransform(opacity, value => value  > 0?'auto':'none')
+    const pointerEvents = useTransform(opacity, value => value > 0?'auto':'none');
 
     return(
-        <Container style={{opacity, pointerEvents}}>
+        <ModelOverlayDiv style={{opacity, pointerEvents}}>
             {children}
-        </Container>
+        </ModelOverlayDiv>
     )
 }
 

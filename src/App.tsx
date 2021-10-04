@@ -1,14 +1,15 @@
 import React from 'react';
-import { Globals } from './styles/Globals';
-import Page from './components/Page';
 
-function App() {
-  return (
+import Page from './page';
+import { GlobalStyle } from './styles/Globals';
+
+const App:React.FC = ()=>{
+  return(
     <>
       <Page />
-      <Globals/>
+      <GlobalStyle />
     </>
-  );
+  )
 }
 
 export default App;
